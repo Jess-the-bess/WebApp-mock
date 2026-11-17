@@ -1,0 +1,6 @@
+{
+  "name": "Logo Her — Job Scheduler",
+  "description": "Dark-mode iOS mobile job scheduling web app built with pure HTML, CSS, and vanilla JavaScript.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
