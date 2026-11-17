@@ -503,38 +503,36 @@ function renderHomeView() {
       </div>
     </section>
 
-    <section aria-label="Weekly Revenue Graph">
-      <div class="graph-card">
-        <div class="graph-card-head">
-          <span class="graph-card-title">Weekly Activity</span>
-          <span class="graph-card-stat tabular">${escapeHtml(activeGraphDay.dow)} ${escapeHtml(activeGraphDay.num)} · ${formatMoney(activeGraphDay.revenue)} · ${activeGraphJobs} jobs</span>
-        </div>
-        <div class="weekly-bars" role="listbox" aria-label="Weekly revenue bars">
-          ${state.weekDays
-            .map((day, idx) => {
-              const pct = Math.max(16, Math.round((day.revenue / maxRevenue) * 100));
-              const isSelected = idx === state.selectedGraphDayIndex;
-              return `
-              <button
-                type="button"
-                class="week-bar-col ${isSelected ? 'is-selected' : ''}"
-                data-graph-day="${idx}"
-                role="option"
-                aria-selected="${isSelected}"
-                aria-label="${escapeHtml(day.full)}, ${formatMoney(day.revenue)}"
-              >
-                <div class="week-bar-track">
-                  <div class="week-bar-fill" style="height:${pct}%"></div>
-                </div>
-                <span class="week-bar-label">${day.dow}</span>
-              </button>`;
-            })
-            .join('')}
-        </div>
+    <section class="glass-card" aria-label="Weekly Revenue Graph">
+      <div class="graph-card-head">
+        <span class="graph-card-title">Weekly Activity</span>
+        <span class="graph-card-stat tabular">${escapeHtml(activeGraphDay.dow)} ${escapeHtml(activeGraphDay.num)} · ${formatMoney(activeGraphDay.revenue)} · ${activeGraphJobs} jobs</span>
+      </div>
+      <div class="weekly-bars" role="listbox" aria-label="Weekly revenue bars">
+        ${state.weekDays
+          .map((day, idx) => {
+            const pct = Math.max(16, Math.round((day.revenue / maxRevenue) * 100));
+            const isSelected = idx === state.selectedGraphDayIndex;
+            return `
+            <button
+              type="button"
+              class="week-bar-col ${isSelected ? 'is-selected' : ''}"
+              data-graph-day="${idx}"
+              role="option"
+              aria-selected="${isSelected}"
+              aria-label="${escapeHtml(day.full)}, ${formatMoney(day.revenue)}"
+            >
+              <div class="week-bar-track">
+                <div class="week-bar-fill" style="height:${pct}%"></div>
+              </div>
+              <span class="week-bar-label">${day.dow}</span>
+            </button>`;
+          })
+          .join('')}
       </div>
     </section>
 
-    <section aria-label="Today's Schedule">
+    <section class="glass-card" aria-label="Today's Schedule">
       <div class="section-header">
         <div>
           <h2 class="section-title">Today's Schedule</h2>
@@ -553,7 +551,7 @@ function renderHomeView() {
       </div>
     </section>
 
-    <section aria-label="Quick Actions">
+    <section class="glass-card" aria-label="Quick Actions">
       <div class="section-header">
         <h2 class="section-title">Quick Actions</h2>
       </div>
@@ -634,60 +632,64 @@ function renderContactsView() {
       </button>
     </div>
 
-    <div class="search-box">
-      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-      </svg>
-      <input
-        type="search"
-        class="search-input"
-        id="contact-search-input"
-        placeholder="Search"
-        value="${escapeHtml(state.contactQuery)}"
-        aria-label="Search contacts"
-      />
-      <button type="button" class="search-clear-btn" id="contact-search-clear" aria-label="Clear search" ${state.contactQuery ? '' : 'hidden'}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
+    <div class="glass-card">
+      <div class="search-box">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
-      </button>
+        <input
+          type="search"
+          class="search-input"
+          id="contact-search-input"
+          placeholder="Search"
+          value="${escapeHtml(state.contactQuery)}"
+          aria-label="Search contacts"
+        />
+        <button type="button" class="search-clear-btn" id="contact-search-clear" aria-label="Clear search" ${state.contactQuery ? '' : 'hidden'}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="flat-filter-tabs" role="tablist" aria-label="Contact type filter">
+        ${['All', 'Residential', 'Commercial']
+          .map(
+            (tab) => `
+          <button type="button" class="filter-tab-btn ${state.contactFilter === tab ? 'active' : ''}" data-contact-filter="${tab}" role="tab" aria-selected="${state.contactFilter === tab}">
+            ${tab}
+          </button>`
+          )
+          .join('')}
+      </div>
     </div>
 
-    <div class="flat-filter-tabs" role="tablist" aria-label="Contact type filter">
-      ${['All', 'Residential', 'Commercial']
-        .map(
-          (tab) => `
-        <button type="button" class="filter-tab-btn ${state.contactFilter === tab ? 'active' : ''}" data-contact-filter="${tab}" role="tab" aria-selected="${state.contactFilter === tab}">
-          ${tab}
-        </button>`
-        )
-        .join('')}
-    </div>
-
-    <div class="flat-list">
-      ${
-        filtered.length
-          ? filtered
-              .map(
-                (contact) => `
-        <button type="button" class="flat-row" data-contact-id="${escapeHtml(contact.id)}">
-          <span class="contact-avatar" aria-hidden="true">${escapeHtml(getInitials(contact.name))}</span>
-          <span class="row-main">
-            <span class="row-title" style="display:block">${escapeHtml(contact.name)}</span>
-            <span class="row-subline" style="display:block">${escapeHtml(contact.type)} · ${escapeHtml(contact.lastJob)}</span>
-          </span>
-          ${chevronSvg()}
-        </button>`
-              )
-              .join('')
-          : `
-        <div class="empty-state">
-          <div class="empty-state-title">No matching contacts</div>
-          <div class="empty-state-text">Try clearing your search or adding a new client.</div>
-        </div>`
-      }
+    <div class="glass-card">
+      <div class="flat-list">
+        ${
+          filtered.length
+            ? filtered
+                .map(
+                  (contact) => `
+          <button type="button" class="flat-row" data-contact-id="${escapeHtml(contact.id)}">
+            <span class="contact-avatar" aria-hidden="true">${escapeHtml(getInitials(contact.name))}</span>
+            <span class="row-main">
+              <span class="row-title" style="display:block">${escapeHtml(contact.name)}</span>
+              <span class="row-subline" style="display:block">${escapeHtml(contact.type)} · ${escapeHtml(contact.lastJob)}</span>
+            </span>
+            ${chevronSvg()}
+          </button>`
+                )
+                .join('')
+            : `
+          <div class="empty-state">
+            <div class="empty-state-title">No matching contacts</div>
+            <div class="empty-state-text">Try clearing your search or adding a new client.</div>
+          </div>`
+        }
+      </div>
     </div>
   `;
 }
@@ -714,27 +716,29 @@ function renderCalendarView() {
       </div>
     </div>
 
-    <div class="week-strip" role="listbox" aria-label="Select day">
-      ${state.weekDays
-        .map((day, idx) => {
-          const count = state.jobs.filter((j) => j.dayIndex === idx).length;
-          return `
-          <button
-            type="button"
-            class="day-btn ${idx === state.selectedDayIndex ? 'active' : ''}"
-            data-day-index="${idx}"
-            role="option"
-            aria-selected="${idx === state.selectedDayIndex}"
-          >
-            <span class="day-dow">${day.dow}</span>
-            <span class="day-num">${day.num}</span>
-            <span class="day-count">${count} ${count === 1 ? 'job' : 'jobs'}</span>
-          </button>`;
-        })
-        .join('')}
+    <div class="glass-card">
+      <div class="week-strip" role="listbox" aria-label="Select day">
+        ${state.weekDays
+          .map((day, idx) => {
+            const count = state.jobs.filter((j) => j.dayIndex === idx).length;
+            return `
+            <button
+              type="button"
+              class="day-btn ${idx === state.selectedDayIndex ? 'active' : ''}"
+              data-day-index="${idx}"
+              role="option"
+              aria-selected="${idx === state.selectedDayIndex}"
+            >
+              <span class="day-dow">${day.dow}</span>
+              <span class="day-num">${day.num}</span>
+              <span class="day-count">${count} ${count === 1 ? 'job' : 'jobs'}</span>
+            </button>`;
+          })
+          .join('')}
+      </div>
     </div>
 
-    <section aria-label="Selected day schedule">
+    <section class="glass-card" aria-label="Selected day schedule">
       <div class="section-header">
         <h2 class="section-title">${escapeHtml(selectedDay.full)}</h2>
         <span class="view-subtitle tabular">${dayJobs.length} scheduled</span>
@@ -777,62 +781,66 @@ function renderLeadsView() {
       </button>
     </div>
 
-    <div class="pipeline-strip">
-      <div class="pipeline-stat">
-        <div class="pipeline-stat-label">New</div>
-        <div class="pipeline-stat-value tabular">${formatMoney(sumVal(newLeads))}</div>
-        <div class="pipeline-stat-count tabular">${newLeads.length} leads</div>
-      </div>
-      <div class="pipeline-stat">
-        <div class="pipeline-stat-label">Quoted</div>
-        <div class="pipeline-stat-value tabular">${formatMoney(sumVal(quotedLeads))}</div>
-        <div class="pipeline-stat-count tabular">${quotedLeads.length} leads</div>
-      </div>
-      <div class="pipeline-stat">
-        <div class="pipeline-stat-label">Won</div>
-        <div class="pipeline-stat-value tabular" style="color:var(--accent-primary)">${formatMoney(sumVal(wonLeads))}</div>
-        <div class="pipeline-stat-count tabular">${wonLeads.length} leads</div>
+    <div class="glass-card">
+      <div class="pipeline-strip">
+        <div class="pipeline-stat">
+          <div class="pipeline-stat-label">New</div>
+          <div class="pipeline-stat-value tabular">${formatMoney(sumVal(newLeads))}</div>
+          <div class="pipeline-stat-count tabular">${newLeads.length} leads</div>
+        </div>
+        <div class="pipeline-stat">
+          <div class="pipeline-stat-label">Quoted</div>
+          <div class="pipeline-stat-value tabular">${formatMoney(sumVal(quotedLeads))}</div>
+          <div class="pipeline-stat-count tabular">${quotedLeads.length} leads</div>
+        </div>
+        <div class="pipeline-stat">
+          <div class="pipeline-stat-label">Won</div>
+          <div class="pipeline-stat-value tabular" style="color:var(--accent-primary)">${formatMoney(sumVal(wonLeads))}</div>
+          <div class="pipeline-stat-count tabular">${wonLeads.length} leads</div>
+        </div>
       </div>
     </div>
 
-    <div class="flat-filter-tabs" role="tablist" aria-label="Lead stage filter">
-      ${['All', 'New', 'Quoted', 'Won']
-        .map(
-          (stage) => `
-        <button type="button" class="filter-tab-btn ${state.leadFilter === stage ? 'active' : ''}" data-lead-filter="${stage}" role="tab" aria-selected="${state.leadFilter === stage}">
-          ${stage}
-        </button>`
-        )
-        .join('')}
-    </div>
+    <div class="glass-card">
+      <div class="flat-filter-tabs" role="tablist" aria-label="Lead stage filter">
+        ${['All', 'New', 'Quoted', 'Won']
+          .map(
+            (stage) => `
+          <button type="button" class="filter-tab-btn ${state.leadFilter === stage ? 'active' : ''}" data-lead-filter="${stage}" role="tab" aria-selected="${state.leadFilter === stage}">
+            ${stage}
+          </button>`
+          )
+          .join('')}
+      </div>
 
-    <div class="flat-list">
-      ${
-        filtered.length
-          ? filtered
-              .map(
-                (lead) => `
-        <button type="button" class="flat-row" data-lead-id="${escapeHtml(lead.id)}">
-          <div class="row-main">
-            <div class="row-title">${escapeHtml(lead.name)}</div>
-            <div class="row-subline">${escapeHtml(lead.service)} · ${escapeHtml(lead.source)} · ${escapeHtml(lead.age)}</div>
-          </div>
-          <div class="row-right">
-            <div style="text-align:right;">
-              <div class="lead-value tabular">${formatMoney(lead.value)}</div>
-              <div class="status-label ${lead.stage === 'Won' ? 'completed' : lead.stage === 'Quoted' ? 'in-progress' : 'scheduled'}">${escapeHtml(lead.stage)}</div>
+      <div class="flat-list">
+        ${
+          filtered.length
+            ? filtered
+                .map(
+                  (lead) => `
+          <button type="button" class="flat-row" data-lead-id="${escapeHtml(lead.id)}">
+            <div class="row-main">
+              <div class="row-title">${escapeHtml(lead.name)}</div>
+              <div class="row-subline">${escapeHtml(lead.service)} · ${escapeHtml(lead.source)} · ${escapeHtml(lead.age)}</div>
             </div>
-            ${chevronSvg()}
-          </div>
-        </button>`
-              )
-              .join('')
-          : `
-        <div class="empty-state">
-          <div class="empty-state-title">No leads in ${escapeHtml(state.leadFilter)}</div>
-          <div class="empty-state-text">Tap + Lead to capture a new estimate request.</div>
-        </div>`
-      }
+            <div class="row-right">
+              <div style="text-align:right;">
+                <div class="lead-value tabular">${formatMoney(lead.value)}</div>
+                <div class="status-label ${lead.stage === 'Won' ? 'completed' : lead.stage === 'Quoted' ? 'in-progress' : 'scheduled'}">${escapeHtml(lead.stage)}</div>
+              </div>
+              ${chevronSvg()}
+            </div>
+          </button>`
+                )
+                .join('')
+            : `
+          <div class="empty-state">
+            <div class="empty-state-title">No leads in ${escapeHtml(state.leadFilter)}</div>
+            <div class="empty-state-text">Tap + Lead to capture a new estimate request.</div>
+          </div>`
+        }
+      </div>
     </div>
   `;
 }

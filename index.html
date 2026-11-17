@@ -31,6 +31,27 @@
   </head>
   <body>
     <div class="app-shell" id="app-shell">
+      <div class="abstract-bg" aria-hidden="true">
+        <div class="abstract-orb orb-top"></div>
+        <div class="abstract-orb orb-mid"></div>
+        <div class="abstract-orb orb-bottom"></div>
+        <svg class="abstract-waves" viewBox="0 0 430 900" fill="none" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="waveGrad1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#4F9CF9" stop-opacity="0.34" />
+              <stop offset="55%" stop-color="#7B61FF" stop-opacity="0.22" />
+              <stop offset="100%" stop-color="#00E5B0" stop-opacity="0.16" />
+            </linearGradient>
+            <linearGradient id="waveGrad2" x1="1" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.28" />
+              <stop offset="100%" stop-color="#818CF8" stop-opacity="0.12" />
+            </linearGradient>
+          </defs>
+          <path d="M-40 160 C80 90, 210 250, 340 170 C410 130, 450 180, 480 140" stroke="url(#waveGrad1)" stroke-width="56" stroke-linecap="round" opacity="0.55" />
+          <path d="M-30 520 C90 430, 240 600, 390 480 C440 440, 470 470, 490 450" stroke="url(#waveGrad2)" stroke-width="72" stroke-linecap="round" opacity="0.5" />
+          <path d="M-20 790 C110 710, 250 850, 450 740" stroke="url(#waveGrad1)" stroke-width="84" stroke-linecap="round" opacity="0.72" />
+        </svg>
+      </div>
       <header class="top-bar">
         <button type="button" class="brand-button" id="brand-home-btn" aria-label="Go to Home">
           <span class="brand-mark" aria-hidden="true">
