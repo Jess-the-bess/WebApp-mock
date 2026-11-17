@@ -1,9 +1,3 @@
-@property --angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-
 :root {
   /* Uniform Deep Midnight-Charcoal + Frosted Glass Palette */
   --bg-outer: #07090e;
@@ -30,6 +24,7 @@
   --radius-btn: 14px;
   --radius-dropdown: 20px;
   --ease-ios: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-woosh: cubic-bezier(0.22, 1, 0.36, 1);
   --top-bar-height: 54px;
   --bottom-nav-height: 60px;
 }
@@ -220,7 +215,7 @@ textarea:focus-visible {
 }
 
 .popover-anchor {
-  position: relative;
+  position: static;
   display: flex;
   align-items: center;
 }
@@ -306,19 +301,19 @@ textarea:focus-visible {
   border: 1.5px solid var(--text-white);
 }
 
-/* Curved Glass Dropdowns */
+/* Full-Width Curved Dropdowns (100% width & 100% opaque fill) */
 .curved-dropdown {
   position: absolute;
-  top: calc(100% + 8px);
+  top: 100%;
+  left: 0;
   right: 0;
-  background-color: var(--glass-bg-elevated);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid var(--glass-border-strong);
-  border-radius: var(--radius-dropdown);
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55), var(--glass-highlight);
-  transform-origin: top right;
-  animation: dropdownEnter 170ms var(--ease-ios);
+  width: 100%;
+  background-color: #151926;
+  border-bottom: 1px solid var(--glass-border-strong);
+  border-radius: 0 0 24px 24px;
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.72);
+  transform-origin: top center;
+  animation: dropdownEnter 190ms var(--ease-ios);
   z-index: 60;
   overflow: hidden;
 }
@@ -328,14 +323,13 @@ textarea:focus-visible {
 }
 
 .profile-dropdown {
-  width: 210px;
-  padding: 6px;
+  padding: 10px 14px 14px;
 }
 
 .dropdown-item {
   width: 100%;
-  min-height: 44px;
-  padding: 10px 14px;
+  min-height: 48px;
+  padding: 12px 14px;
   border-radius: 14px;
   display: flex;
   align-items: center;
@@ -356,7 +350,7 @@ textarea:focus-visible {
 }
 
 .dropdown-item:active {
-  transform: scale(0.98);
+  transform: scale(0.985);
 }
 
 .dropdown-item-danger,
@@ -366,14 +360,12 @@ textarea:focus-visible {
 
 .dropdown-divider {
   height: 1px;
-  margin: 4px 10px;
+  margin: 6px 10px;
   background-color: var(--border-hairline);
 }
 
 .notifications-dropdown {
-  width: 288px;
-  right: -46px;
-  padding: 12px;
+  padding: 12px 16px 16px;
 }
 
 .dropdown-header {
@@ -435,15 +427,58 @@ textarea:focus-visible {
   color: var(--text-muted);
 }
 
-/* Main Content Area */
+/* Main Content Area & Page Woosh Transitions */
 .main-content {
   position: relative;
   z-index: 10;
   flex: 1;
   padding: 16px 14px calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 36px);
+  overflow-x: clip;
+}
+
+.page-stage {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  will-change: transform, opacity, filter;
+}
+
+.page-outgoing {
+  position: absolute;
+  top: 16px;
+  left: 14px;
+  right: 14px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.page-woosh-in-right {
+  animation: wooshInRight 300ms var(--ease-woosh) both;
+}
+
+.page-woosh-in-left {
+  animation: wooshInLeft 300ms var(--ease-woosh) both;
+}
+
+.page-woosh-out-left {
+  animation: wooshOutLeft 240ms var(--ease-woosh) both;
+}
+
+.page-woosh-out-right {
+  animation: wooshOutRight 240ms var(--ease-woosh) both;
+}
+
+/* Staggered Item Appearance Effects */
+.animate-items .anim-item {
+  opacity: 0;
+  animation: itemAppear 320ms var(--ease-ios) both;
+  animation-delay: calc(var(--stagger, 0) * 42ms);
+}
+
+.animate-items .anim-row {
+  opacity: 0;
+  animation: rowAppear 260ms var(--ease-ios) both;
+  animation-delay: calc(80ms + var(--stagger, 0) * 32ms);
 }
 
 /* Reusable Frosted Glass Card Surface */
@@ -1079,7 +1114,7 @@ textarea:focus-visible {
   max-width: 26ch;
 }
 
-/* iOS 26 RGB Liquid Glass Floating Capsule Menu */
+/* iOS 26 Liquid Glass Floating Capsule Menu (No RGB border) */
 .bottom-nav {
   position: fixed;
   bottom: calc(10px + env(safe-area-inset-bottom, 0px));
@@ -1094,38 +1129,15 @@ textarea:focus-visible {
   background: rgba(255, 255, 255, 0.13);
   backdrop-filter: blur(22px) saturate(190%);
   -webkit-backdrop-filter: blur(22px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   box-shadow:
-    0 10px 36px rgba(0, 0, 0, 0.45),
-    inset 0 1px 1px rgba(255, 255, 255, 0.45);
+    0 12px 36px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.42);
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: center;
   gap: 4px;
   overflow: hidden;
-}
-
-/* Animated RGB Liquid Rim */
-.bottom-nav::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  padding: 2px;
-  background: conic-gradient(
-    from var(--angle, 0deg),
-    rgb(255, 0, 85),
-    rgb(0, 255, 170),
-    rgb(0, 140, 255),
-    rgb(255, 0, 85)
-  );
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  animation: spin-rgb 4s linear infinite;
-  pointer-events: none;
-  z-index: 0;
 }
 
 .nav-item {
@@ -1140,11 +1152,12 @@ textarea:focus-visible {
   justify-content: center;
   gap: 3px;
   color: rgba(255, 255, 255, 0.76);
-  transition: background-color 180ms var(--ease-ios), color 180ms var(--ease-ios), transform 150ms var(--ease-ios);
+  transition: background-color 200ms var(--ease-ios), color 180ms var(--ease-ios), transform 150ms var(--ease-ios), box-shadow 200ms var(--ease-ios);
 }
 
 .nav-item .nav-icon {
   color: rgba(255, 255, 255, 0.88);
+  transition: transform 200ms var(--ease-ios);
 }
 
 .nav-item:hover {
@@ -1153,7 +1166,7 @@ textarea:focus-visible {
 }
 
 .nav-item:active {
-  transform: scale(0.95);
+  transform: scale(0.94);
 }
 
 .nav-item.active {
@@ -1165,6 +1178,7 @@ textarea:focus-visible {
 .nav-item.active .nav-icon {
   color: var(--text-white);
   stroke-width: 2.3;
+  transform: translateY(-1px);
 }
 
 .nav-label {
@@ -1176,12 +1190,6 @@ textarea:focus-visible {
 
 .nav-item.active .nav-label {
   font-weight: 600;
-}
-
-@keyframes spin-rgb {
-  to {
-    --angle: 360deg;
-  }
 }
 
 /* iOS Frosted Glass Bottom Sheet Modal */
@@ -1398,6 +1406,80 @@ textarea:focus-visible {
 
 .toast[hidden] {
   display: none;
+}
+
+@keyframes wooshInRight {
+  from {
+    opacity: 0;
+    transform: translateX(42px) scale(0.98);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes wooshInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-42px) scale(0.98);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes wooshOutLeft {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    filter: blur(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-34px) scale(0.96);
+    filter: blur(4px);
+  }
+}
+
+@keyframes wooshOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    filter: blur(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(34px) scale(0.96);
+    filter: blur(4px);
+  }
+}
+
+@keyframes itemAppear {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes rowAppear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes dropdownEnter {

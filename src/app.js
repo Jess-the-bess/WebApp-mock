@@ -412,8 +412,23 @@ function closeSheet() {
 sheetBackdrop?.addEventListener('click', closeSheet);
 sheetCloseBtn?.addEventListener('click', closeSheet);
 
+// Tab Ordering for Directional Woosh
+const TAB_ORDER = {
+  home: 0,
+  contacts: 1,
+  calendar: 2,
+  leads: 3,
+};
+
+let outgoingCleanupTimer = null;
+
 // Tab Switching
 function setTab(tabName) {
+  if (state.activeTab === tabName) return;
+  const prevIndex = TAB_ORDER[state.activeTab] ?? 0;
+  const nextIndex = TAB_ORDER[tabName] ?? 0;
+  const direction = nextIndex >= prevIndex ? 1 : -1;
+
   state.activeTab = tabName;
   closeAllDropdowns();
   navItems.forEach((btn) => {
@@ -425,7 +440,7 @@ function setTab(tabName) {
       btn.removeAttribute('aria-current');
     }
   });
-  renderView();
+  renderView({ wooshDirection: direction, animateItems: true });
   if (mainContent) {
     mainContent.scrollTop = 0;
   }
@@ -443,9 +458,9 @@ brandHomeBtn?.addEventListener('click', () => {
 });
 
 // Flat Job Row Template
-function renderJobRow(job) {
+function renderJobRow(job, staggerIndex = 0) {
   return `
-    <button type="button" class="flat-row" data-job-id="${escapeHtml(job.id)}">
+    <button type="button" class="flat-row anim-row" style="--stagger:${staggerIndex}" data-job-id="${escapeHtml(job.id)}">
       <div class="row-time-col">
         <span class="row-time-main tabular">${escapeHtml(job.time)}</span>
         <span class="row-time-sub tabular">${escapeHtml(job.duration)}</span>
@@ -474,7 +489,7 @@ function renderHomeView() {
   const activeGraphJobs = state.jobs.filter((j) => j.dayIndex === state.selectedGraphDayIndex).length;
 
   return `
-    <section aria-label="Invoice KPI cards">
+    <section aria-label="Invoice KPI cards" class="anim-item" style="--stagger:0">
       <div class="kpi-grid">
         <button type="button" class="kpi-card" id="paid-kpi-btn">
           <div class="kpi-top">
@@ -503,7 +518,7 @@ function renderHomeView() {
       </div>
     </section>
 
-    <section class="glass-card" aria-label="Weekly Revenue Graph">
+    <section class="glass-card anim-item" style="--stagger:1" aria-label="Weekly Revenue Graph">
       <div class="graph-card-head">
         <span class="graph-card-title">Weekly Activity</span>
         <span class="graph-card-stat tabular">${escapeHtml(activeGraphDay.dow)} ${escapeHtml(activeGraphDay.num)} · ${formatMoney(activeGraphDay.revenue)} · ${activeGraphJobs} jobs</span>
@@ -532,7 +547,7 @@ function renderHomeView() {
       </div>
     </section>
 
-    <section class="glass-card" aria-label="Today's Schedule">
+    <section class="glass-card anim-item" style="--stagger:2" aria-label="Today's Schedule">
       <div class="section-header">
         <div>
           <h2 class="section-title">Today's Schedule</h2>
@@ -547,11 +562,11 @@ function renderHomeView() {
       </div>
 
       <div class="flat-list">
-        ${todayJobs.map((job) => renderJobRow(job)).join('')}
+        ${todayJobs.map((job, idx) => renderJobRow(job, idx)).join('')}
       </div>
     </section>
 
-    <section class="glass-card" aria-label="Quick Actions">
+    <section class="glass-card anim-item" style="--stagger:3" aria-label="Quick Actions">
       <div class="section-header">
         <h2 class="section-title">Quick Actions</h2>
       </div>
@@ -618,7 +633,7 @@ function renderContactsView() {
   });
 
   return `
-    <div class="view-header">
+    <div class="view-header anim-item" style="--stagger:0">
       <div>
         <h1 class="view-title">Contacts</h1>
         <p class="view-subtitle tabular">${state.contacts.length} clients saved</p>
@@ -632,7 +647,7 @@ function renderContactsView() {
       </button>
     </div>
 
-    <div class="glass-card">
+    <div class="glass-card anim-item" style="--stagger:1">
       <div class="search-box">
         <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="11" cy="11" r="8" />
@@ -666,14 +681,14 @@ function renderContactsView() {
       </div>
     </div>
 
-    <div class="glass-card">
+    <div class="glass-card anim-item" style="--stagger:2">
       <div class="flat-list">
         ${
           filtered.length
             ? filtered
                 .map(
-                  (contact) => `
-          <button type="button" class="flat-row" data-contact-id="${escapeHtml(contact.id)}">
+                  (contact, idx) => `
+          <button type="button" class="flat-row anim-row" style="--stagger:${idx}" data-contact-id="${escapeHtml(contact.id)}">
             <span class="contact-avatar" aria-hidden="true">${escapeHtml(getInitials(contact.name))}</span>
             <span class="row-main">
               <span class="row-title" style="display:block">${escapeHtml(contact.name)}</span>
@@ -699,7 +714,7 @@ function renderCalendarView() {
   const dayJobs = state.jobs.filter((j) => j.dayIndex === state.selectedDayIndex);
 
   return `
-    <div class="view-header">
+    <div class="view-header anim-item" style="--stagger:0">
       <div>
         <h1 class="view-title">Calendar</h1>
         <p class="view-subtitle">November 2026</p>
@@ -716,7 +731,7 @@ function renderCalendarView() {
       </div>
     </div>
 
-    <div class="glass-card">
+    <div class="glass-card anim-item" style="--stagger:1">
       <div class="week-strip" role="listbox" aria-label="Select day">
         ${state.weekDays
           .map((day, idx) => {
@@ -738,7 +753,7 @@ function renderCalendarView() {
       </div>
     </div>
 
-    <section class="glass-card" aria-label="Selected day schedule">
+    <section class="glass-card anim-item" style="--stagger:2" aria-label="Selected day schedule">
       <div class="section-header">
         <h2 class="section-title">${escapeHtml(selectedDay.full)}</h2>
         <span class="view-subtitle tabular">${dayJobs.length} scheduled</span>
@@ -746,7 +761,7 @@ function renderCalendarView() {
 
       ${
         dayJobs.length
-          ? `<div class="flat-list">${dayJobs.map((job) => renderJobRow(job)).join('')}</div>`
+          ? `<div class="flat-list">${dayJobs.map((job, idx) => renderJobRow(job, idx)).join('')}</div>`
           : `
         <div class="empty-state">
           <div class="empty-state-title">Open day</div>
@@ -767,7 +782,7 @@ function renderLeadsView() {
   const filtered = state.leads.filter((l) => state.leadFilter === 'All' || l.stage === state.leadFilter);
 
   return `
-    <div class="view-header">
+    <div class="view-header anim-item" style="--stagger:0">
       <div>
         <h1 class="view-title">Leads</h1>
         <p class="view-subtitle tabular">${state.leads.length} active inquiries</p>
@@ -781,7 +796,7 @@ function renderLeadsView() {
       </button>
     </div>
 
-    <div class="glass-card">
+    <div class="glass-card anim-item" style="--stagger:1">
       <div class="pipeline-strip">
         <div class="pipeline-stat">
           <div class="pipeline-stat-label">New</div>
@@ -801,7 +816,7 @@ function renderLeadsView() {
       </div>
     </div>
 
-    <div class="glass-card">
+    <div class="glass-card anim-item" style="--stagger:2">
       <div class="flat-filter-tabs" role="tablist" aria-label="Lead stage filter">
         ${['All', 'New', 'Quoted', 'Won']
           .map(
@@ -818,8 +833,8 @@ function renderLeadsView() {
           filtered.length
             ? filtered
                 .map(
-                  (lead) => `
-          <button type="button" class="flat-row" data-lead-id="${escapeHtml(lead.id)}">
+                  (lead, idx) => `
+          <button type="button" class="flat-row anim-row" style="--stagger:${idx}" data-lead-id="${escapeHtml(lead.id)}">
             <div class="row-main">
               <div class="row-title">${escapeHtml(lead.name)}</div>
               <div class="row-subline">${escapeHtml(lead.service)} · ${escapeHtml(lead.source)} · ${escapeHtml(lead.age)}</div>
@@ -884,7 +899,7 @@ function openInvoicesSheet(statusFilter) {
         target.status = 'paid';
         target.date = 'Paid Today';
         closeSheet();
-        renderView();
+        renderView({ animateItems: true });
         showToast(`${target.id} marked paid`);
       }
     });
@@ -934,7 +949,7 @@ function openJobSheet(jobId) {
   document.getElementById('toggle-job-status-btn')?.addEventListener('click', () => {
     job.status = isComplete ? 'Scheduled' : 'Completed';
     closeSheet();
-    renderView();
+    renderView({ animateItems: false });
     showToast(job.status === 'Completed' ? 'Job marked completed' : 'Job reopened');
   });
 }
@@ -1002,7 +1017,7 @@ function openNewJobSheet(presetDayIndex = state.selectedDayIndex, presetClient =
     });
     state.selectedDayIndex = dayIndex;
     closeSheet();
-    renderView();
+    renderView({ animateItems: true });
     showToast('Job added to schedule');
   });
 }
@@ -1041,7 +1056,7 @@ function openSendInvoiceSheet() {
       date: 'Sent Today',
     });
     closeSheet();
-    renderView();
+    renderView({ animateItems: false });
     showToast(`Invoice sent to ${client}`);
   });
 }
@@ -1097,7 +1112,7 @@ function openAddContactSheet() {
       lastJob: 'Added today',
     });
     closeSheet();
-    renderView();
+    renderView({ animateItems: true });
     showToast(`${name} added to Contacts`);
   });
 }
@@ -1156,7 +1171,7 @@ function openAddLeadSheet() {
       notes: 'Logged via mobile quick action.',
     });
     closeSheet();
-    renderView();
+    renderView({ animateItems: true });
     showToast(`Lead logged for ${name}`);
   });
 }
@@ -1253,7 +1268,7 @@ function openLeadSheet(leadId) {
     if (nextStage) {
       lead.stage = nextStage;
       closeSheet();
-      renderView();
+      renderView({ animateItems: false });
       showToast(`Lead moved to ${nextStage}`);
     }
   });
@@ -1264,20 +1279,22 @@ function openLeadSheet(leadId) {
 }
 
 // Event Binding After Render
-function bindViewEvents() {
-  // Home
-  document.getElementById('paid-kpi-btn')?.addEventListener('click', () => openInvoicesSheet('paid'));
-  document.getElementById('unpaid-kpi-btn')?.addEventListener('click', () => openInvoicesSheet('unpaid'));
-  document.getElementById('see-calendar-btn')?.addEventListener('click', () => setTab('calendar'));
+function bindViewEvents(container) {
+  const scope = container || mainContent;
 
-  document.querySelectorAll('[data-graph-day]').forEach((btn) => {
+  // Home
+  scope.querySelector('#paid-kpi-btn')?.addEventListener('click', () => openInvoicesSheet('paid'));
+  scope.querySelector('#unpaid-kpi-btn')?.addEventListener('click', () => openInvoicesSheet('unpaid'));
+  scope.querySelector('#see-calendar-btn')?.addEventListener('click', () => setTab('calendar'));
+
+  scope.querySelectorAll('[data-graph-day]').forEach((btn) => {
     btn.addEventListener('click', () => {
       state.selectedGraphDayIndex = Number(btn.getAttribute('data-graph-day'));
-      renderView();
+      renderView({ animateItems: false });
     });
   });
 
-  document.querySelectorAll('[data-quick]').forEach((btn) => {
+  scope.querySelectorAll('[data-quick]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const action = btn.getAttribute('data-quick');
       if (action === 'new-job') openNewJobSheet();
@@ -1288,18 +1305,18 @@ function bindViewEvents() {
   });
 
   // Shared Job Rows
-  document.querySelectorAll('[data-job-id]').forEach((btn) => {
+  scope.querySelectorAll('[data-job-id]').forEach((btn) => {
     btn.addEventListener('click', () => {
       openJobSheet(btn.getAttribute('data-job-id'));
     });
   });
 
   // Contacts
-  const searchInput = document.getElementById('contact-search-input');
+  const searchInput = scope.querySelector('#contact-search-input');
   searchInput?.addEventListener('input', (e) => {
     state.contactQuery = e.target.value;
     const caretPos = e.target.selectionStart;
-    renderView();
+    renderView({ animateItems: false });
     const nextInput = document.getElementById('contact-search-input');
     if (nextInput) {
       nextInput.focus();
@@ -1307,79 +1324,111 @@ function bindViewEvents() {
     }
   });
 
-  document.getElementById('contact-search-clear')?.addEventListener('click', () => {
+  scope.querySelector('#contact-search-clear')?.addEventListener('click', () => {
     state.contactQuery = '';
-    renderView();
+    renderView({ animateItems: true });
     document.getElementById('contact-search-input')?.focus();
   });
 
-  document.querySelectorAll('[data-contact-filter]').forEach((btn) => {
+  scope.querySelectorAll('[data-contact-filter]').forEach((btn) => {
     btn.addEventListener('click', () => {
       state.contactFilter = btn.getAttribute('data-contact-filter');
-      renderView();
+      renderView({ animateItems: true });
     });
   });
 
-  document.getElementById('contacts-add-btn')?.addEventListener('click', openAddContactSheet);
+  scope.querySelector('#contacts-add-btn')?.addEventListener('click', openAddContactSheet);
 
-  document.querySelectorAll('[data-contact-id]').forEach((btn) => {
+  scope.querySelectorAll('[data-contact-id]').forEach((btn) => {
     btn.addEventListener('click', () => {
       openContactSheet(btn.getAttribute('data-contact-id'));
     });
   });
 
   // Calendar
-  document.getElementById('cal-today-btn')?.addEventListener('click', () => {
+  scope.querySelector('#cal-today-btn')?.addEventListener('click', () => {
     state.selectedDayIndex = 1;
-    renderView();
+    renderView({ animateItems: true });
   });
 
-  document.getElementById('cal-add-btn')?.addEventListener('click', () => {
+  scope.querySelector('#cal-add-btn')?.addEventListener('click', () => {
     openNewJobSheet(state.selectedDayIndex);
   });
 
-  document.getElementById('empty-cal-add-btn')?.addEventListener('click', () => {
+  scope.querySelector('#empty-cal-add-btn')?.addEventListener('click', () => {
     openNewJobSheet(state.selectedDayIndex);
   });
 
-  document.querySelectorAll('[data-day-index]').forEach((btn) => {
+  scope.querySelectorAll('[data-day-index]').forEach((btn) => {
     btn.addEventListener('click', () => {
       state.selectedDayIndex = Number(btn.getAttribute('data-day-index'));
-      renderView();
+      renderView({ animateItems: true });
     });
   });
 
   // Leads
-  document.getElementById('leads-add-btn')?.addEventListener('click', openAddLeadSheet);
+  scope.querySelector('#leads-add-btn')?.addEventListener('click', openAddLeadSheet);
 
-  document.querySelectorAll('[data-lead-filter]').forEach((btn) => {
+  scope.querySelectorAll('[data-lead-filter]').forEach((btn) => {
     btn.addEventListener('click', () => {
       state.leadFilter = btn.getAttribute('data-lead-filter');
-      renderView();
+      renderView({ animateItems: true });
     });
   });
 
-  document.querySelectorAll('[data-lead-id]').forEach((btn) => {
+  scope.querySelectorAll('[data-lead-id]').forEach((btn) => {
     btn.addEventListener('click', () => {
       openLeadSheet(btn.getAttribute('data-lead-id'));
     });
   });
 }
 
-function renderView() {
+function getActiveViewMarkup() {
+  if (state.activeTab === 'home') return renderHomeView();
+  if (state.activeTab === 'contacts') return renderContactsView();
+  if (state.activeTab === 'calendar') return renderCalendarView();
+  return renderLeadsView();
+}
+
+function renderView(options = {}) {
   if (!mainContent) return;
-  if (state.activeTab === 'home') {
-    mainContent.innerHTML = renderHomeView();
-  } else if (state.activeTab === 'contacts') {
-    mainContent.innerHTML = renderContactsView();
-  } else if (state.activeTab === 'calendar') {
-    mainContent.innerHTML = renderCalendarView();
-  } else if (state.activeTab === 'leads') {
-    mainContent.innerHTML = renderLeadsView();
+  const { wooshDirection = 0, animateItems = true } = options;
+
+  clearTimeout(outgoingCleanupTimer);
+  mainContent.querySelectorAll('.page-outgoing').forEach((el) => el.remove());
+
+  const prevStage = mainContent.querySelector('.page-stage:not(.page-outgoing)');
+  if (wooshDirection !== 0 && prevStage) {
+    const outgoing = prevStage.cloneNode(true);
+    outgoing.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
+    outgoing.classList.remove('animate-items', 'page-woosh-in-right', 'page-woosh-in-left');
+    outgoing.classList.add('page-outgoing', wooshDirection > 0 ? 'page-woosh-out-left' : 'page-woosh-out-right');
+    outgoing.setAttribute('aria-hidden', 'true');
+    prevStage.replaceWith(outgoing);
+    outgoingCleanupTimer = setTimeout(() => {
+      outgoing.remove();
+    }, 260);
+  } else {
+    mainContent.innerHTML = '';
   }
-  bindViewEvents();
+
+  const nextStage = document.createElement('div');
+  nextStage.className = 'page-stage';
+  if (animateItems) {
+    nextStage.classList.add('animate-items');
+  }
+  if (wooshDirection > 0) {
+    nextStage.classList.add('page-woosh-in-right');
+  } else if (wooshDirection < 0) {
+    nextStage.classList.add('page-woosh-in-left');
+  }
+
+  nextStage.innerHTML = getActiveViewMarkup();
+  mainContent.appendChild(nextStage);
+
+  bindViewEvents(nextStage);
 }
 
 // Initial Render
 renderNotifications();
-renderView();
+renderView({ animateItems: true });
